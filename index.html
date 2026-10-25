@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compex Quad Coach | Teen Cadet Portal (Ages 16-18)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for Quad Radar Breakdown -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#04060a',
+                            dark: '#0a0e17',
+                            card: '#121824',
+                            border: '#1f293d',
+                            neon: '#00ff88',
+                            cyan: '#00e5ff',
+                            red: '#ff2a5f',
+                            yellow: '#ffcc00',
+                            purple: '#a855f7'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #04060a;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(0, 229, 255, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(0, 255, 136, 0.04) 0%, transparent 40%);
+        }
+        .glass-panel {
+            background: rgba(18, 24, 36, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .neon-glow-green { box-shadow: 0 0 25px rgba(0, 255, 136, 0.25); }
+        .neon-glow-red { box-shadow: 0 0 25px rgba(255, 42, 95, 0.3); }
+        .neon-glow-cyan { box-shadow: 0 0 25px rgba(0, 229, 255, 0.25); }
+        input[type=range] { accent-color: #00ff88; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #04060a; }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-neon selection:text-black">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-brand-border bg-brand-dark/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="playAudio('click'); triggerHaptic(10);">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-neon via-brand-cyan to-brand-purple flex items-center justify-center text-black font-orbitron font-black text-xl shadow-lg">
+                    CX
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-orbitron font-black text-lg tracking-wider text-white">COMPEX <span class="text-brand-neon">QUAD</span> COACH</span>
+                        <span class="bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan text-[9px] font-mono font-bold px-1.5 py-0.5 rounded">TEEN 16–18</span>
+                    </div>
+                    <span class="block text-[10px] text-gray-400 font-mono tracking-widest uppercase">Guided EMS Training & Setup Assistant</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button id="sound-toggle" onclick="toggleAudio()" class="p-2 rounded-xl border border-brand-border bg-brand-card hover:border-brand-neon transition text-gray-300 text-xs flex items-center space-x-1.5">
+                    <i class="fa-solid fa-volume-high text-brand-neon" id="sound-icon"></i>
+                    <span class="hidden sm:inline font-mono text-[11px]" id="sound-text">AUDIO ON</span>
+                </button>
+                <div id="cadet-badge" class="hidden sm:flex items-center space-x-2 bg-brand-card px-3 py-1.5 rounded-xl border border-brand-border font-mono text-xs">
+                    <span class="w-2 h-2 rounded-full bg-brand-neon animate-ping"></span>
+                    <span id="cadet-id-text" class="text-brand-neon font-bold">CADET #--</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Disclaimer Notice Banner -->
+    <div class="bg-brand-dark/90 border-b border-brand-border py-2 px-4 text-center">
+        <p class="text-[11px] font-mono text-gray-300">
+            <i class="fa-solid fa-circle-info text-brand-cyan mr-1.5"></i>
+            <strong class="text-white">COACHING ASSISTANT ONLY:</strong> This application provides setup protocols, pad guides, and parameter guidance. You operate your physical Compex unit manually.
+        </p>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- STEP 1: ONBOARDING GATE (16-18 STRICT LOCKOUT + CADET MARKER ASSIGNMENT + COMPEX PHOTO PROOF) -->
+        <div id="onboarding-gate" class="max-w-3xl mx-auto my-4 glass-panel rounded-3xl p-6 sm:p-10 border border-brand-border relative overflow-hidden shadow-2xl">
+            <div class="absolute -top-20 -right-20 w-60 h-60 bg-brand-neon/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 rounded-2xl bg-brand-neon/10 border border-brand-neon/30 text-brand-neon mb-2">
+                    <i class="fa-solid fa-id-card-clip text-3xl"></i>
+                </div>
+                <h2 class="font-orbitron text-2xl sm:text-3xl font-black text-white tracking-wide">TEEN ATHLETE INDUCTION</h2>
+                <p class="text-xs text-gray-400 font-mono mt-1">Quad EMS Program Protocols • Ages 16–18 Only</p>
+            </div>
+
+            <form id="gate-form" onsubmit="handleCadetSignIn(event)" class="space-y-5">
+                
+                <!-- 1. Strict Age Gate -->
+                <div class="bg-brand-dark p-4 sm:p-5 rounded-2xl border border-brand-border">
+                    <label class="block font-orbitron text-xs text-brand-neon uppercase tracking-wider mb-3 font-bold">
+                        1. Verify Your Age (Strict 16–18 Gate)
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button type="button" onclick="setAge(16)" id="age-btn-16" class="age-btn py-3 rounded-xl border border-brand-border bg-brand-card text-center text-xs font-orbitron font-bold text-white hover:border-brand-neon transition">16 Years</button>
+                        <button type="button" onclick="setAge(17)" id="age-btn-17" class="age-btn py-3 rounded-xl border border-brand-border bg-brand-card text-center text-xs font-orbitron font-bold text-white hover:border-brand-neon transition">17 Years</button>
+                        <button type="button" onclick="setAge(18)" id="age-btn-18" class="age-btn py-3 rounded-xl border border-brand-border bg-brand-card text-center text-xs font-orbitron font-bold text-white hover:border-brand-neon transition">18 Years</button>
+                    </div>
+                    <input type="hidden" id="selected-age" value="">
+                    <p class="text-[10px] text-gray-400 mt-2 font-mono"><i class="fa-solid fa-lock text-brand-red mr-1"></i> Ages under 16 or 19+ trigger lockout.</p>
+                </div>
+
+                <!-- 2. Call-Sign & Goal -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-brand-dark p-4 sm:p-5 rounded-2xl border border-brand-border">
+                    <div>
+                        <label class="block font-orbitron text-xs text-brand-cyan uppercase tracking-wider mb-2 font-bold">2. Athlete Call-Sign / Name</label>
+                        <input type="text" id="cadet-name" required placeholder="e.g. QuadZilla" 
+                            class="w-full bg-brand-card border border-brand-border rounded-xl px-4 py-2 text-white font-mono text-xs focus:border-brand-cyan focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-orbitron text-xs text-brand-yellow uppercase tracking-wider mb-2 font-bold">3. Primary Quad Focus Goal</label>
+                        <select id="cadet-goal" class="w-full bg-brand-card border border-brand-border rounded-xl px-4 py-2 text-white font-mono text-xs focus:border-brand-yellow focus:outline-none">
+                            <option value="Max VMO Explosive Power">Max VMO Explosive Power</option>
+                            <option value="Hypertrophy & Quad Sweep Density">Hypertrophy & Quad Sweep Density</option>
+                            <option value="Patellar Knee Stabilization & Recovery">Patellar Knee Stabilization & Recovery</option>
+                            <option value="Sprint Acceleration & Fast-Twitch Trigger">Sprint Acceleration & Fast-Twitch Trigger</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3. Compex Device Upload Proof -->
+                <div class="bg-brand-dark p-4 sm:p-5 rounded-2xl border border-brand-border space-y-3">
+                    <label class="block font-orbitron text-xs text-brand-purple uppercase tracking-wider font-bold">
+                        4. Upload Compex Device Proof Photo
+                    </label>
+                    <p class="text-[11px] text-gray-400 font-mono">Upload a photo of your Compex unit to verify you own the hardware.</p>
+                    
+                    <div class="border-2 border-dashed border-brand-border hover:border-brand-purple rounded-2xl p-4 text-center cursor-pointer transition bg-brand-card/50" onclick="triggerPhotoUpload()">
+                        <input type="file" id="compex-photo-input" accept="image/*" class="hidden" onchange="handlePhotoSelect(event)">
+                        <div id="photo-preview-container" class="space-y-2">
+                            <i class="fa-solid fa-camera text-2xl text-brand-purple"></i>
+                            <span id="upload-status-text" class="block text-xs font-mono text-gray-300">Tap to snap or select Compex hardware photo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Shaved Quads & 2-Digit Calf Marking Confirmation Checkboxes -->
+                <div class="bg-brand-dark p-4 sm:p-5 rounded-2xl border border-brand-border space-y-3 font-mono text-xs">
+                    <label class="block font-orbitron text-xs text-brand-neon uppercase tracking-wider font-bold">
+                        5. Program Requirements Checklist
+                    </label>
+                    
+                    <label class="flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" id="chk-shaved" required class="mt-1 accent-brand-neon w-4 h-4 rounded">
+                        <span class="text-gray-300">I confirm my quads are **freshly shaved** (or smooth) for maximum electrode pad adhesion and conductivity.</span>
+                    </label>
+
+                    <label class="flex items-start space-x-3 cursor-pointer">
+                        <input type="checkbox" id="chk-calf-marking" required class="mt-1 accent-brand-neon w-4 h-4 rounded">
+                        <span class="text-gray-300">I agree to write my assigned **2-digit Cadet Number** on the outer sides of **both calves** using a marker for home program induction tracking.</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-brand-neon via-brand-cyan to-brand-neon bg-[length:200%_auto] text-black font-orbitron font-black py-4 px-6 rounded-2xl text-xs uppercase tracking-wider hover:opacity-95 transition shadow-lg shadow-brand-neon/20">
+                    Generate 2-Digit Cadet ID & Enter Portal <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- LOCKOUT SCREEN (Non 16-18) -->
+        <div id="lockout-screen" class="hidden max-w-xl mx-auto my-12 glass-panel rounded-3xl p-8 border border-brand-red text-center space-y-6 neon-glow-red">
+            <div class="inline-flex p-4 rounded-full bg-brand-red/10 text-brand-red border border-brand-red/30">
+                <i class="fa-solid fa-lock text-5xl"></i>
+            </div>
+            <div>
+                <h2 class="font-orbitron text-3xl font-black text-white tracking-wider">ACCESS LOCKED</h2>
+                <p class="text-brand-red text-xs font-mono mt-1 font-bold uppercase">AGE RESTRICTION ENFORCED (16–18 ONLY)</p>
+            </div>
+            <p class="text-xs sm:text-sm text-gray-300 leading-relaxed bg-brand-dark p-4 rounded-xl border border-brand-border font-mono">
+                This coach system is calibrated strictly for late-teen quadriceps tendon development. Your selected age does not fit the target window.
+            </p>
+            <button onclick="resetGate()" class="bg-brand-card border border-brand-border hover:border-gray-500 text-white font-mono text-xs px-6 py-3 rounded-xl transition">
+                <i class="fa-solid fa-rotate-left mr-2"></i> Try Again
+            </button>
+        </div>
+
+        <!-- STEP 2: HIGH-VOLTAGE EXTREME WARNING MODAL -->
+        <div id="intensity-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+            <div class="max-w-xl w-full glass-panel border border-brand-red rounded-3xl p-6 sm:p-8 space-y-5 text-center neon-glow-red relative">
+                <div class="w-14 h-14 rounded-full bg-brand-red/10 border border-brand-red/40 text-brand-red flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-bolt animate-bounce"></i>
+                </div>
+                <div>
+                    <h3 class="font-orbitron text-2xl font-black text-white uppercase tracking-wider">HIGH-VOLTAGE EMS WARNING</h3>
+                    <p class="text-brand-red text-xs font-mono font-bold mt-1">READ BEFORE OPERATING YOUR PHYSICAL COMPEX</p>
+                </div>
+                
+                <!-- Assigned Calf Marker Banner -->
+                <div class="bg-brand-dark p-3.5 rounded-2xl border border-brand-neon text-left font-mono text-xs space-y-1">
+                    <span class="text-brand-neon font-bold block"><i class="fa-solid fa-marker mr-1.5"></i> MANDATORY CALF MARKER ASSIGNMENT:</span>
+                    <p class="text-gray-300">Your assigned 2-digit cadet number is <strong id="modal-cadet-num" class="text-white text-sm bg-brand-neon text-black px-1.5 py-0.5 rounded">#--</strong>. Write <span id="modal-cadet-num-2" class="text-brand-neon font-bold">#--</span> on the outer side of both calves with a waterproof marker before starting.</p>
+                </div>
+
+                <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border text-xs text-gray-300 text-left space-y-2 font-mono">
+                    <p>⚡ <strong class="text-white">Full Tetanic Contractions:</strong> Compex produces intense electrical impulses that lock the quad solid. Always keep your legs bent at ~90 degrees while seated.</p>
+                    <p>⚡ <strong class="text-white">Manual Control:</strong> You control the energy dials ($\text{mA}$) on your hardware. Dial up intensity steadily each contraction phase.</p>
+                    <p>⚡ <strong class="text-white">Tendon Protection:</strong> Never jump to high intensity on cold muscle tissue. Run the 5-minute warm-up pulse first.</p>
+                </div>
+
+                <button onclick="acceptWarning()" class="w-full bg-brand-red text-white font-orbitron font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider hover:bg-brand-red/90 transition shadow-lg shadow-brand-red/20">
+                    I Understand & Accept High-Voltage Safety Rules <i class="fa-solid fa-check ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD -->
+        <div id="app-dashboard" class="hidden space-y-8">
+            
+            <!-- CADET PROFILE BANNER & DEVICE SELECTOR -->
+            <div class="glass-panel p-6 rounded-3xl border border-brand-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <!-- Cadet Info -->
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-3">
+                        <span id="dash-cadet-id" class="font-mono text-sm font-black text-black bg-brand-neon px-3 py-1 rounded-lg">#42</span>
+                        <span id="dash-cadet-name" class="font-orbitron font-extrabold text-xl text-white">Cadet Athlete</span>
+                    </div>
+                    <p class="text-xs text-gray-400 font-mono">ASSIGNED GOAL: <span id="dash-cadet-goal" class="text-brand-cyan font-bold">Max VMO Explosive Power</span></p>
+                    <p class="text-[11px] text-brand-yellow font-mono"><i class="fa-solid fa-marker mr-1"></i> Verify number <span id="dash-calf-num" class="font-bold text-white">#42</span> is written on calf sides.</p>
+                </div>
+
+                <!-- Device Selector -->
+                <div class="w-full md:w-auto bg-brand-dark p-3.5 rounded-2xl border border-brand-border flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div class="text-xs">
+                        <span class="block font-orbitron text-[10px] text-gray-400 uppercase font-bold">YOUR COMPEX MODEL</span>
+                        <span id="device-mi-features" class="font-mono text-[10px] text-brand-neon">MI-Scan | MI-Autorange Active</span>
+                    </div>
+                    <select id="compex-device-select" onchange="handleDeviceChange()" class="w-full sm:w-auto bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-brand-neon focus:outline-none">
+                        <option value="sp8">Compex SP 8.0 Wireless (Full MI Suite)</option>
+                        <option value="sp4">Compex SP 4.0 Wired (MI-Scan / Range)</option>
+                        <option value="sp2">Compex SP 2.0 Wired (MI-Scan)</option>
+                        <option value="fit5">Compex Fit 5.0 Wireless</option>
+                        <option value="fit3">Compex Fit 3.0 Wired</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-brand-border overflow-x-auto space-x-2 pb-2">
+                <button onclick="switchTab('profiler')" id="tab-profiler" class="tab-btn px-5 py-3 rounded-2xl font-orbitron text-xs font-bold tracking-wider transition bg-brand-neon text-black">
+                    <i class="fa-solid fa-list-check mr-2"></i>1. 15-Q Quad Profiler
+                </button>
+                <button onclick="switchTab('feedback')" id="tab-feedback" class="tab-btn px-5 py-3 rounded-2xl font-orbitron text-xs font-bold tracking-wider transition text-gray-400 hover:text-white hover:bg-brand-card">
+                    <i class="fa-solid fa-chart-radar mr-2"></i>2. Diagnostics & Dynamic Feedback
+                </button>
+                <button onclick="switchTab('programs')" id="tab-programs" class="tab-btn px-5 py-3 rounded-2xl font-orbitron text-xs font-bold tracking-wider transition text-gray-400 hover:text-white hover:bg-brand-card">
+                    <i class="fa-solid fa-bolt mr-2"></i>3. Compex Programs Reference
+                </button>
+                <button onclick="switchTab('placement')" id="tab-placement" class="tab-btn px-5 py-3 rounded-2xl font-orbitron text-xs font-bold tracking-wider transition text-gray-400 hover:text-white hover:bg-brand-card">
+                    <i class="fa-solid fa-crosshairs mr-2"></i>4. Pad Maps & Setup
+                </button>
+            </div>
+
+            <!-- TAB 1: 15-QUESTION QUAD PROFILER CHART -->
+            <div id="panel-profiler" class="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-border space-y-6">
+                <div class="border-b border-brand-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-orbitron font-extrabold text-2xl text-white">15-POINT TEEN QUAD BUILDER CHART</h3>
+                        <p class="text-xs text-gray-400 font-mono">Fill out all parameters so the coach can analyze your quad setup and conductivity potential.</p>
+                    </div>
+                </div>
+
+                <form id="fifteen-q-form" onsubmit="handleProfilerSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    
+                    <!-- Q1: Confirmed Age -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-neon font-bold">1. Confirmed Teen Age</label>
+                        <select id="q1-age" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="16">16 Years Old</option>
+                            <option value="17" selected>17 Years Old</option>
+                            <option value="18">18 Years Old</option>
+                        </select>
+                    </div>
+
+                    <!-- Q2: Shave Prep -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-cyan font-bold">2. Quad Shave & Prep Status</label>
+                        <select id="q2-shave" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="smooth">Freshly Shaved & Smooth (100% Conductivity)</option>
+                            <option value="stubble">Light Stubble / Hair (50% Impedance Loss)</option>
+                            <option value="hairy">Unshaved / Dry Hair (High Surface Resistance)</option>
+                        </select>
+                    </div>
+
+                    <!-- Q3: Proof Photo Verified -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-yellow font-bold">3. Compex Photo Proof</label>
+                        <select id="q3-photo" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="verified">Verified Hardware Photo Uploaded</option>
+                            <option value="pending">Pending Hardware Upload</option>
+                        </select>
+                    </div>
+
+                    <!-- Q4: Calf Marking Confirmation -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-purple font-bold">4. 2-Digit Calf Marking Status</label>
+                        <select id="q4-calf" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="marked">Written on Outer Calves with Marker</option>
+                            <option value="unmarked">Not Marked Yet</option>
+                        </select>
+                    </div>
+
+                    <!-- Q5: Weight -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-neon font-bold">5. Athlete Body Weight (kg)</label>
+                        <input type="number" id="q5-weight" value="72" min="45" max="120" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                    </div>
+
+                    <!-- Q6: Target Quad Area -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-cyan font-bold">6. Primary Target Quad Sector</label>
+                        <select id="q6-sector" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="vmo">VMO Teardrop (Medialis)</option>
+                            <option value="rectus">Rectus Femoris (Upper/Mid Thigh)</option>
+                            <option value="lateralis">Vastus Lateralis (Outer Sweep)</option>
+                            <option value="full">Full Quad Complex Balanced</option>
+                        </select>
+                    </div>
+
+                    <!-- Q7: Heavy Leg Days -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-yellow font-bold">7. Heavy Squat / Leg Sessions / Wk</label>
+                        <select id="q7-squat" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="1">1 Leg Day / Week</option>
+                            <option value="2" selected>2 Leg Days / Week</option>
+                            <option value="3">3+ High Volume Days / Week</option>
+                        </select>
+                    </div>
+
+                    <!-- Q8: Experience Level -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-purple font-bold">8. EMS Contraction Tolerance</label>
+                        <select id="q8-exp" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="rookie">Beginner (Sensory Twitch to Light Tetanus)</option>
+                            <option value="intermediate" selected>Intermediate (Solid Tetanic Hold)</option>
+                            <option value="advanced">Advanced (High mA Tetanus Tolerated)</option>
+                        </select>
+                    </div>
+
+                    <!-- Q9: Fiber Profile -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-neon font-bold">9. Muscle Fiber Bias</label>
+                        <select id="q9-fiber" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="fast">Explosive Fast-Twitch (Sprinting / Jumping)</option>
+                            <option value="slow">Slow-Twitch Endurance</option>
+                            <option value="hybrid">Balanced Hybrid</option>
+                        </select>
+                    </div>
+
+                    <!-- Q10: Gel Condition -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-cyan font-bold">10. Electrode Gel Pad Condition</label>
+                        <select id="q10-pads" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="fresh">Fresh & Sticky Gel Pads</option>
+                            <option value="used">Used (10–15 Sessions)</option>
+                            <option value="dry">Dry / Old Pads (Needs Water Drops)</option>
+                        </select>
+                    </div>
+
+                    <!-- Q11: Primary Goal -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-yellow font-bold">11. Primary Goal Focus</label>
+                        <select id="q11-goal" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="jump">Vertical Jump & Sprint Acceleration</option>
+                            <option value="mass">Teardrop VMO Hypertrophy</option>
+                            <option value="recovery">Match Day Active Recovery</option>
+                        </select>
+                    </div>
+
+                    <!-- Q12: Current DOMS -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-purple font-bold">12. Current Quad Soreness (DOMS)</label>
+                        <select id="q12-doms" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="none">Zero Soreness (Fresh Legs)</option>
+                            <option value="mild">Mild Stiffness</option>
+                            <option value="heavy">Heavy Post-Workout DOMS</option>
+                        </select>
+                    </div>
+
+                    <!-- Q13: Knee Stability -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-neon font-bold">13. Patellar Tendon Health</label>
+                        <select id="q13-knee" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="healthy">Healthy Knots & Tendons</option>
+                            <option value="tracking">Mild Patellar Tracking Irritation</option>
+                        </select>
+                    </div>
+
+                    <!-- Q14: Planned Frequency -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-cyan font-bold">14. Weekly Compex Target Sessions</label>
+                        <select id="q14-freq" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="2">2 Sessions / Week</option>
+                            <option value="3" selected>3 Sessions / Week</option>
+                            <option value="4">4+ Active Recovery & Strength Days</option>
+                        </select>
+                    </div>
+
+                    <!-- Q15: Post-Session Habits -->
+                    <div class="bg-brand-dark p-4 rounded-2xl border border-brand-border space-y-2">
+                        <label class="block font-orbitron text-xs text-brand-yellow font-bold">15. Hydration & Recovery Discipline</label>
+                        <select id="q15-habits" class="w-full bg-brand-card border border-brand-border rounded-xl p-2.5 text-xs font-mono text-white">
+                            <option value="high">High Hydration + 8+ Hrs Sleep</option>
+                            <option value="moderate">Moderate Hydration / Sleep</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="md:col-span-2 lg:col-span-3 pt-2">
+                        <button type="submit" class="w-full bg-brand-neon text-black font-orbitron font-black py-4 rounded-2xl text-xs uppercase tracking-wider hover:bg-brand-neon/90 transition shadow-lg shadow-brand-neon/20 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-calculator text-base"></i>
+                            <span>Process 15-Point Diagnostic Assessment</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TAB 2: DIAGNOSTICS & DYNAMIC FEEDBACK (UPLIFTING VS HARSH ROAST) -->
+            <div id="panel-feedback" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Dynamic Feedback Card -->
+                    <div class="lg:col-span-6 glass-panel p-6 sm:p-8 rounded-3xl border border-brand-border flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-brand-border pb-3 mb-4">
+                                <h3 class="font-orbitron font-extrabold text-lg text-white">COACH EVALUATION REPORT</h3>
+                                <span id="feedback-badge" class="px-3 py-1 rounded-md font-mono text-xs font-bold bg-brand-neon/20 text-brand-neon border border-brand-neon/40">CALCULATED</span>
+                            </div>
+
+                            <div id="feedback-card" class="p-5 rounded-2xl border transition-all duration-300 space-y-3 bg-brand-dark border-brand-border">
+                                <div class="flex items-start space-x-3">
+                                    <div id="feedback-icon" class="text-3xl text-brand-neon">
+                                        <i class="fa-solid fa-award"></i>
+                                    </div>
+                                    <div>
+                                        <h4 id="feedback-title" class="font-orbitron font-bold text-base text-white">Assessment Ready</h4>
+                                        <p id="feedback-subtitle" class="text-xs text-gray-400 font-mono">Run the 15-Point Chart to generate feedback.</p>
+                                    </div>
+                                </div>
+                                <div id="feedback-body" class="text-xs sm:text-sm text-gray-300 leading-relaxed font-sans pt-3 border-t border-brand-border/40">
+                                    Your quad shave prep and gel quality directly determine whether you get motivational praise or a technical roast!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Stats -->
+                        <div class="grid grid-cols-3 gap-3 mt-6">
+                            <div class="bg-brand-dark p-3.5 rounded-xl border border-brand-border text-center">
+                                <span class="text-[10px] text-gray-400 font-mono block mb-1">CONDUCTIVITY</span>
+                                <span id="stat-cond" class="text-xl font-orbitron font-extrabold text-brand-neon">-- %</span>
+                            </div>
+                            <div class="bg-brand-dark p-3.5 rounded-xl border border-brand-border text-center">
+                                <span class="text-[10px] text-gray-400 font-mono block mb-1">PULSE WIDTH</span>
+                                <span id="stat-pulse" class="text-xl font-orbitron font-extrabold text-brand-cyan">-- μs</span>
+                            </div>
+                            <div class="bg-brand-dark p-3.5 rounded-xl border border-brand-border text-center">
+                                <span class="text-[10px] text-gray-400 font-mono block mb-1">RECRUITMENT</span>
+                                <span id="stat-rec" class="text-xl font-orbitron font-extrabold text-brand-yellow">-- %</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radar Chart & Metrics -->
+                    <div class="lg:col-span-6 glass-panel p-6 rounded-3xl border border-brand-border flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-orbitron font-bold text-base text-white mb-2">QUAD PROFILE RADAR</h3>
+                            <p class="text-xs text-gray-400 font-mono mb-4">Performance axes mapped from your assessment</p>
+                            
+                            <div class="relative w-full h-64 flex items-center justify-center">
+                                <canvas id="quadRadarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-brand-border flex justify-between items-center text-xs font-mono">
+                            <span class="text-gray-400"><i class="fa-solid fa-microchip text-brand-cyan mr-1"></i> Device Model Calibrated</span>
+                            <button onclick="switchTab('programs'); playAudio('pulse');" class="text-brand-neon hover:underline font-bold">View Programs Reference →</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB 3: FULL COMPEX CONDITIONING PROGRAM REFERENCE -->
+            <div id="panel-programs" class="hidden space-y-6">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-border">
+                    <div class="border-b border-brand-border pb-4 mb-6">
+                        <h3 class="font-orbitron font-extrabold text-2xl text-white">COMPLEX QUAD PROGRAM REFERENCE</h3>
+                        <p class="text-xs text-gray-400 font-mono mt-1">Manual reference parameters for operating your physical Compex unit on your quadriceps.</p>
+                    </div>
+
+                    <!-- Program Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        
+                        <!-- 1. Warm-Up / Capillarisation -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">PRE-SESSION</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>15m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Capillarisation</h4>
+                                <p class="text-xs text-gray-400 mt-1">Massively increases localized quad blood flow before leg workouts.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-cyan font-bold">7–10 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">300 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Scan</span></div>
+                            </div>
+                            <button onclick="simulatePulse(8, 300); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-cyan font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (8 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 2. Endurance -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-neon/20 text-brand-neon border border-brand-neon/40">STAMINA</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>30m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Quad Endurance</h4>
+                                <p class="text-xs text-gray-400 mt-1">Targets Type I slow-twitch muscle fibers for sustained athletic output.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-neon font-bold">10–25 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">350 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Autorange</span></div>
+                            </div>
+                            <button onclick="simulatePulse(20, 350); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-neon font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (20 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 3. Quad Resistance -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/40">LACTATE HELD</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>26m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Quad Resistance</h4>
+                                <p class="text-xs text-gray-400 mt-1">Improves lactic acid buffering capacity in intense mid-range efforts.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-yellow font-bold">50–70 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">400 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Range</span></div>
+                            </div>
+                            <button onclick="simulatePulse(60, 400); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-yellow font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (60 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 4. Max Strength -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-purple/20 text-brand-purple border border-brand-purple/40">MAX FORCE</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>20m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Maximum Strength</h4>
+                                <p class="text-xs text-gray-400 mt-1">Recruits high-threshold motor units for raw maximum squat power.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-purple font-bold">75–100 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">400 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Action</span></div>
+                            </div>
+                            <button onclick="simulatePulse(85, 400); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-purple font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (85 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 5. Explosive Strength -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-red/20 text-brand-red border border-brand-red/40">VERTICAL JUMP</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>18m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Explosive Strength</h4>
+                                <p class="text-xs text-gray-400 mt-1">Maximizes rate of force development for sprinting acceleration and vertical jump.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-red font-bold">120 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">350 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Action</span></div>
+                            </div>
+                            <button onclick="simulatePulse(120, 350); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-red font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (120 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 6. Hypertrophy -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-neon/20 text-brand-neon border border-brand-neon/40">TEARDROP MASS</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>25m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Quad Hypertrophy</h4>
+                                <p class="text-xs text-gray-400 mt-1">Expands muscle fiber cross-sectional area and VMO teardrop volume.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-neon font-bold">75 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">400 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Autorange</span></div>
+                            </div>
+                            <button onclick="simulatePulse(75, 400); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-neon font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (75 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 7. Active Recovery -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">POST-MATCH</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>24m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Active Recovery</h4>
+                                <p class="text-xs text-gray-400 mt-1">Low-frequency twitch pumping to flush lactic acid and accelerate recovery.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-cyan font-bold">1–9 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">Auto (MI)</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Tens</span></div>
+                            </div>
+                            <button onclick="simulatePulse(4, 300); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-cyan font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (4 Hz)</span>
+                            </button>
+                        </div>
+
+                        <!-- 8. Muscle Relax -->
+                        <div class="bg-brand-dark rounded-2xl p-5 border border-brand-border hover:border-brand-neon transition space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/40">CRAMP RELIEF</span>
+                                    <span class="text-xs font-mono text-gray-400"><i class="fa-solid fa-clock mr-1"></i>20m</span>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white">Muscle Relax</h4>
+                                <p class="text-xs text-gray-400 mt-1">Relieves residual quad stiffness and prevents post-workout cramping.</p>
+                            </div>
+                            <div class="space-y-1.5 text-xs font-mono bg-brand-card p-3 rounded-xl border border-brand-border">
+                                <div class="flex justify-between"><span class="text-gray-400">Target Hz:</span><span class="text-brand-yellow font-bold">1 Hz</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Pulse Width:</span><span class="text-white">250 μs</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">MI Feature:</span><span class="text-brand-neon">MI-Scan</span></div>
+                            </div>
+                            <button onclick="simulatePulse(1, 250); playAudio('pulse');" class="w-full bg-brand-card hover:bg-brand-border border border-brand-border text-brand-yellow font-orbitron font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                                <span>Simulate Audio Pulse (1 Hz)</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: VISUAL ELECTRODE PAD MAPS & MI GUIDES -->
+            <div id="panel-placement" class="hidden space-y-6">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-border">
+                    <div class="border-b border-brand-border pb-4 mb-6">
+                        <h3 class="font-orbitron font-extrabold text-2xl text-white">QUAD ELECTRODE PAD MAPS</h3>
+                        <p class="text-xs text-gray-400 font-mono mt-1">Step-by-step motor point placement diagram for maximum current delivery.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        
+                        <!-- Interactive SVG Quad Diagram -->
+                        <div class="lg:col-span-5 bg-brand-dark p-6 rounded-2xl border border-brand-border flex flex-col items-center justify-center relative">
+                            <h4 class="font-orbitron text-xs text-brand-neon font-bold uppercase tracking-wider mb-4">MOTOR POINT MAP</h4>
+                            
+                            <svg viewBox="0 0 300 400" class="w-full max-w-[240px] h-auto">
+                                <!-- Thigh Outer Contour -->
+                                <path d="M 80 40 C 120 20, 180 20, 220 40 C 240 120, 230 260, 200 360 C 160 380, 140 380, 100 360 C 70 260, 60 120, 80 40 Z" fill="#121824" stroke="#1f293d" stroke-width="4"/>
+                                
+                                <!-- Rectus Femoris -->
+                                <path d="M 120 70 C 150 60, 170 60, 180 70 C 190 140, 180 200, 150 220 C 120 200, 110 140, 120 70 Z" fill="rgba(0, 229, 255, 0.15)" stroke="#00e5ff" stroke-width="2"/>
+                                <text x="150" y="140" fill="#00e5ff" font-size="10" font-family="Orbitron" text-anchor="middle">Rectus Femoris</text>
+
+                                <!-- VMO Teardrop -->
+                                <path d="M 100 240 C 130 230, 140 250, 140 290 C 130 330, 100 330, 90 290 Z" fill="rgba(0, 255, 136, 0.2)" stroke="#00ff88" stroke-width="2"/>
+                                <text x="115" y="285" fill="#00ff88" font-size="10" font-family="Orbitron" text-anchor="middle">VMO</text>
+
+                                <!-- Vastus Lateralis -->
+                                <path d="M 180 180 C 220 180, 220 270, 180 300 C 160 270, 160 200, 180 180 Z" fill="rgba(255, 204, 0, 0.2)" stroke="#ffcc00" stroke-width="2"/>
+                                <text x="190" y="240" fill="#ffcc00" font-size="10" font-family="Orbitron" text-anchor="middle">Lateralis</text>
+
+                                <!-- Electrode Pads -->
+                                <rect x="135" y="75" width="30" height="20" rx="4" fill="#00e5ff" class="animate-pulse"/>
+                                <rect x="100" y="260" width="25" height="20" rx="4" fill="#00ff88" class="animate-pulse"/>
+                                <rect x="180" y="210" width="25" height="20" rx="4" fill="#ffcc00" class="animate-pulse"/>
+                            </svg>
+
+                            <span class="text-[10px] font-mono text-gray-400 mt-4 text-center">
+                                <i class="fa-solid fa-circle text-brand-neon mr-1"></i> Green = VMO | <i class="fa-solid fa-circle text-brand-cyan mr-1"></i> Cyan = Upper Rectus | <i class="fa-solid fa-circle text-brand-yellow mr-1"></i> Yellow = Lateralis
+                            </span>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <div class="bg-brand-dark p-5 rounded-2xl border border-brand-border space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-neon"><i class="fa-solid fa-crosshairs mr-2"></i>1. VMO Teardrop Placement</h4>
+                                <p class="text-xs text-gray-300 leading-relaxed font-mono">
+                                    Attach a $5\times 5\text{ cm}$ pad directly over the VMO teardrop bulge on the inner lower thigh (~5cm above knee joint). Essential for knee stability.
+                                </p>
+                            </div>
+
+                            <div class="bg-brand-dark p-5 rounded-2xl border border-brand-border space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-cyan"><i class="fa-solid fa-crosshairs mr-2"></i>2. Rectus Femoris Placement</h4>
+                                <p class="text-xs text-gray-300 leading-relaxed font-mono">
+                                    Place the large $5\times 10\text{ cm}$ pad high on the upper center thigh near the hip crease. Connect the cable snap marked with the MI logo here.
+                                </p>
+                            </div>
+
+                            <div class="bg-brand-dark p-5 rounded-2xl border border-brand-border space-y-2">
+                                <h4 class="font-orbitron font-bold text-sm text-brand-yellow"><i class="fa-solid fa-crosshairs mr-2"></i>3. Vastus Lateralis Placement</h4>
+                                <p class="text-xs text-gray-300 leading-relaxed font-mono">
+                                    Mount along the mid-to-outer quad border. Key for building quad width and lateral drive during sprint starts.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-brand-border bg-brand-dark py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center sm:flex sm:justify-between sm:items-center text-xs text-gray-500 font-mono">
+            <p>© 2026 COMPEX QUAD COACH • TEEN ATHLETE CADET DIVISION</p>
+            <p class="mt-2 sm:mt-0"><i class="fa-solid fa-shield-halved text-brand-neon mr-1"></i> Audio Synth & Haptics Active</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Audio Synthesizer
+        let audioCtx = null;
+        let audioEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playAudio(type) {
+            if (!audioEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'pulse') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(60, now + 0.12);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'warning') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.setValueAtTime(180, now + 0.1);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            if (audioEnabled) {
+                icon.className = "fa-solid fa-volume-high text-brand-neon";
+                text.textContent = "AUDIO ON";
+                playAudio('click');
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-gray-500";
+                text.textContent = "MUTED";
+            }
+        }
+
+        function triggerHaptic(duration = 20) {
+            if ("vibrate" in navigator) {
+                navigator.vibrate(duration);
+            }
+        }
+
+        // State variables
+        let selectedAge = null;
+        let photoUploaded = false;
+        let cadetProfile = {
+            id: null,
+            twoDigit: null,
+            name: '',
+            goal: '',
+            device: 'sp8',
+            age: null
+        };
+        let radarChartInstance = null;
+
+        function setAge(age) {
+            playAudio('click');
+            triggerHaptic(15);
+            selectedAge = age;
+            document.querySelectorAll('.age-btn').forEach(btn => {
+                btn.classList.remove('border-brand-neon', 'bg-brand-neon', 'text-black');
+                btn.classList.add('bg-brand-card', 'text-white');
+            });
+            const activeBtn = document.getElementById(`age-btn-${age}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-brand-card', 'text-white');
+                activeBtn.classList.add('border-brand-neon', 'bg-brand-neon', 'text-black');
+            }
+            document.getElementById('selected-age').value = age;
+        }
+
+        function triggerPhotoUpload() {
+            playAudio('click');
+            document.getElementById('compex-photo-input').click();
+        }
+
+        function handlePhotoSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                photoUploaded = true;
+                playAudio('success');
+                triggerHaptic(30);
+                const status = document.getElementById('upload-status-text');
+                status.textContent = `✓ Hardware Photo Selected: ${file.name}`;
+                status.className = "block text-xs font-mono text-brand-neon font-bold";
+            }
+        }
+
+        function handleCadetSignIn(e) {
+            e.preventDefault();
+            const age = parseInt(document.getElementById('selected-age').value, 10);
+            const name = document.getElementById('cadet-name').value.trim();
+            const goal = document.getElementById('cadet-goal').value;
+
+            if (!age) {
+                playAudio('warning');
+                alert("Please select your age (16, 17, or 18).");
+                return;
+            }
+
+            if (!photoUploaded) {
+                playAudio('warning');
+                alert("Please upload a proof photo of your Compex hardware to enter.");
+                return;
+            }
+
+            // Strict Age Gate
+            if (age >= 16 && age <= 18) {
+                // Generate 2-Digit Cadet Number (e.g. #07, #42)
+                const num = Math.floor(1 + Math.random() * 98);
+                const twoDigitStr = num < 10 ? `0${num}` : `${num}`;
+                
+                cadetProfile.twoDigit = twoDigitStr;
+                cadetProfile.id = `#${twoDigitStr}`;
+                cadetProfile.name = name || 'Quad Cadet';
+                cadetProfile.goal = goal;
+                cadetProfile.age = age;
+
+                // Update Header & Banner
+                document.getElementById('cadet-badge').classList.remove('hidden');
+                document.getElementById('cadet-id-text').textContent = `CADET #${twoDigitStr}`;
+                document.getElementById('dash-cadet-id').textContent = `#${twoDigitStr}`;
+                document.getElementById('dash-cadet-name').textContent = cadetProfile.name;
+                document.getElementById('dash-cadet-goal').textContent = cadetProfile.goal;
+                document.getElementById('dash-calf-num').textContent = `#${twoDigitStr}`;
+
+                document.getElementById('modal-cadet-num').textContent = `#${twoDigitStr}`;
+                document.getElementById('modal-cadet-num-2').textContent = `#${twoDigitStr}`;
+
+                document.getElementById('onboarding-gate').classList.add('hidden');
+                document.getElementById('intensity-modal').classList.remove('hidden');
+                
+                playAudio('warning');
+                triggerHaptic(100);
+            } else {
+                document.getElementById('onboarding-gate').classList.add('hidden');
+                document.getElementById('lockout-screen').classList.remove('hidden');
+                playAudio('warning');
+            }
+        }
+
+        function acceptWarning() {
+            playAudio('success');
+            triggerHaptic(40);
+            document.getElementById('intensity-modal').classList.add('hidden');
+            document.getElementById('app-dashboard').classList.remove('hidden');
+            initRadarChart();
+        }
+
+        function resetGate() {
+            selectedAge = null;
+            document.getElementById('selected-age').value = '';
+            document.querySelectorAll('.age-btn').forEach(btn => {
+                btn.classList.remove('border-brand-neon', 'bg-brand-neon', 'text-black');
+                btn.classList.add('bg-brand-card', 'text-white');
+            });
+            document.getElementById('lockout-screen').classList.add('hidden');
+            document.getElementById('onboarding-gate').classList.remove('hidden');
+        }
+
+        function handleDeviceChange() {
+            playAudio('click');
+            triggerHaptic(15);
+            const val = document.getElementById('compex-device-select').value;
+            const miText = document.getElementById('device-mi-features');
+            
+            cadetProfile.device = val;
+
+            if (val === 'sp8') {
+                miText.textContent = "MI-Scan | MI-Autorange | MI-Tens | MI-Action";
+            } else if (val === 'sp4') {
+                miText.textContent = "MI-Scan | MI-Tens | MI-Range";
+            } else if (val === 'sp2') {
+                miText.textContent = "MI-Scan Active";
+            } else if (val === 'fit5') {
+                miText.textContent = "MI-Scan Wireless Pods";
+            } else {
+                miText.textContent = "MI-Scan Wired";
+            }
+        }
+
+        function switchTab(tabName) {
+            playAudio('click');
+            triggerHaptic(15);
+            const panels = ['profiler', 'feedback', 'programs', 'placement'];
+            panels.forEach(p => {
+                document.getElementById(`panel-${p}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${p}`);
+                btn.classList.remove('bg-brand-neon', 'text-black');
+                btn.classList.add('text-gray-400');
+            });
+
+            document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.remove('text-gray-400');
+            activeBtn.classList.add('bg-brand-neon', 'text-black');
+        }
+
+        function simulatePulse(freq, pulseWidth) {
+            triggerHaptic(60);
+            playAudio('pulse');
+        }
+
+        function initRadarChart() {
+            const ctx = document.getElementById('quadRadarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Conductivity', 'Fast-Twitch Ratio', 'Knee Stability', 'Intensity Tolerance', 'Recovery Speed'],
+                    datasets: [{
+                        label: 'Cadet Quad Profile',
+                        data: [85, 70, 90, 80, 75],
+                        backgroundColor: 'rgba(0, 255, 136, 0.2)',
+                        borderColor: '#00ff88',
+                        pointBackgroundColor: '#00e5ff',
+                        pointBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            pointLabels: {
+                                color: '#94a3b8',
+                                font: { family: 'Orbitron', size: 9 }
+                            },
+                            ticks: { display: false, backdropColor: 'transparent' },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function handleProfilerSubmit(e) {
+            e.preventDefault();
+            playAudio('success');
+            triggerHaptic([30, 30, 60]);
+
+            const shave = document.getElementById('q2-shave').value;
+            const exp = document.getElementById('q8-exp').value;
+
+            let conductivityScore = shave === 'smooth' ? 98 : (shave === 'stubble' ? 50 : 15);
+            let pulseWidth = shave === 'smooth' ? 400 : 200;
+            let recruitmentScore = exp === 'advanced' ? 95 : (exp === 'intermediate' ? 75 : 45);
+
+            document.getElementById('stat-cond').textContent = `${conductivityScore}%`;
+            document.getElementById('stat-pulse').textContent = `${pulseWidth} μs`;
+            document.getElementById('stat-rec').textContent = `${recruitmentScore}%`;
+
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const subtitle = document.getElementById('feedback-subtitle');
+            const body = document.getElementById('feedback-body');
+            const badge = document.getElementById('feedback-badge');
+            const card = document.getElementById('feedback-card');
+
+            if (shave === 'smooth') {
+                card.className = "p-5 rounded-2xl border transition-all duration-300 space-y-3 bg-brand-neon/10 border-brand-neon neon-glow-green";
+                badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-brand-neon/20 text-brand-neon border border-brand-neon/40";
+                badge.textContent = "STATUS: ELITE PREPARATION";
+
+                icon.className = "text-3xl text-brand-neon";
+                icon.innerHTML = `<i class="fa-solid fa-crown"></i>`;
+
+                title.textContent = "MAXIMUM QUAD CONDUCTIVITY POTENTIAL!";
+                title.className = "font-orbitron font-extrabold text-base text-brand-neon";
+                subtitle.textContent = "Zero surface hair impedance detected on quad skin.";
+
+                body.innerHTML = `
+                    <strong>High-Praise Evaluation:</strong> Outstanding preparation, Cadet #${cadetProfile.twoDigit}! Smooth shaved skin allows maximum current density to reach the motor points of your VMO and Rectus Femoris. With ${cadetProfile.device.toUpperCase()} MI features engaged, you are positioned for optimal fast-twitch motor unit recruitment. Get ready for explosive leg power!
+                `;
+
+                if (radarChartInstance) {
+                    radarChartInstance.data.datasets[0].data = [98, 88, 92, 85, 90];
+                    radarChartInstance.update();
+                }
+
+            } else {
+                card.className = "p-5 rounded-2xl border transition-all duration-300 space-y-3 bg-brand-red/10 border-brand-red neon-glow-red";
+                badge.className = "px-3 py-1 rounded-md font-mono text-xs font-bold bg-brand-red/20 text-brand-red border border-brand-red/40";
+                badge.textContent = "STATUS: HIGH IMPEDANCE WARNING";
+
+                icon.className = "text-3xl text-brand-red";
+                icon.innerHTML = `<i class="fa-solid fa-skull-crossbones"></i>`;
+
+                title.textContent = "BLUNT COACH ROAST!";
+                title.className = "font-orbitron font-extrabold text-base text-brand-red";
+                subtitle.textContent = "Hair & dry skin micro-gaps are blocking electrical flow.";
+
+                body.innerHTML = `
+                    <strong>Harsh Coach Feedback:</strong> Cadet #${cadetProfile.twoDigit}, you are wasting electrical current on body hair! Unshaved stubble creates impedance air gaps that reduce pad conductivity by over 50%. Instead of deep motor unit recruitment, you risk skin hot-spots and superficial stinging. <strong>Fix this now:</strong> Shave your quads smooth, apply fresh gel, and re-run your profile!
+                `;
+
+                if (radarChartInstance) {
+                    radarChartInstance.data.datasets[0].data = [25, 40, 60, 30, 45];
+                    radarChartInstance.update();
+                }
+            }
+
+            switchTab('feedback');
+        }
+
+        window.onload = function() {
+            setAge(17);
+        };
+    </script>
+</body>
+</html>
